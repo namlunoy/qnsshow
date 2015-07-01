@@ -1,0 +1,5 @@
+package com.thebrownbox.models;
+
+public class Song {
+	
+}

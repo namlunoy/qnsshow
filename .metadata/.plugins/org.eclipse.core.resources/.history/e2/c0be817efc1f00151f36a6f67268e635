@@ -1,0 +1,10 @@
+package com.thebrownbox.models;
+
+public class Song {
+	private String title;
+	private String singer;
+	private String duration;
+	private String imageURL;
+	private String songURL;
+	
+}

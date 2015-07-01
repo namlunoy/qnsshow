@@ -1,0 +1,8 @@
+package com.thebrownbox.models;
+
+import java.util.Date;
+
+public class Show {
+	private String title;
+	private Date date;
+}
