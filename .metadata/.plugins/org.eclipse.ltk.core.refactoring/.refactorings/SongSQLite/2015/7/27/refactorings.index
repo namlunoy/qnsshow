@@ -1,0 +1,8 @@
+1435763595127	Delete element
+1435772086395	Rename type 'DatabaseController'
+1435772113079	Rename type 'DBController'
+1435772142278	Rename type 'SQLiteJDBC'
+1435774222654	Delete element
+1435776903279	Rename method 'start'
+1435776919519	Rename method 'GetTheShow'
+1435780432123	Rename method 'getTheSongs'

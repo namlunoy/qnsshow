@@ -1,5 +1,0 @@
-package com.thebrownbox.models;
-
-public class Show {
-	private String title;
-}

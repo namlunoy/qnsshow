@@ -1,0 +1,73 @@
+package com.thebrownbox.database;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.thebrownbox.models.Show;
+
+public class MySQLite {
+	private static MySQLite instance = null;
+
+	public static MySQLite getInstance() {
+		if (instance == null)
+			instance = new MySQLite();
+		return instance;
+	}
+
+	private Connection conn;
+	private Statement cmd;
+
+	private MySQLite() {
+		try {
+			Class.forName("org.sqlite.JDBC");
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public List<Show> getTheShow(int index,int number)
+	{
+		String sql = "select * from show limit "+index+","+number;
+		conn = DriverManager.getConnection("jdbc:sqlite:qns.db");
+		cmd = conn.createStatement();
+		
+		
+		List<Show> list = new ArrayList<Show>();
+		return list;
+	}
+	
+	public List<Show> getAllTheShow()
+	{
+		List<Show> list = new ArrayList<Show>();
+		return list;		
+	}
+	
+	public void AddShow(List<Show> list)
+	{
+		try {
+			conn = DriverManager.getConnection("jdbc:sqlite:qns.db");
+			System.out.println("Connected to database!");
+			
+			cmd = conn.createStatement();
+			for(Show s : list)
+			{
+				//insert into show (id,title,date,image_url,content_url) values (1,'123', '123','123','123');
+				String sql = "insert into show (id,title,date,image_url,content_url) values ("+s.getId()+",'"+s.getTitle()+"', '"+s.getDateString()+"','"+s.getImageURL()+"','"+s.getContentUrl()+"');";
+				cmd.execute(sql);
+			}
+			
+			
+			conn.close();
+			System.out.println("Closed database!");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+}

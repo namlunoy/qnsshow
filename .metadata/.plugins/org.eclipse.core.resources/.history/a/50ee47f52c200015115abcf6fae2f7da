@@ -1,0 +1,98 @@
+package com.thebrownbox.drawlertool;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+
+import com.thebrownbox.database.MySQLite;
+import com.thebrownbox.models.Show;
+
+/*
+ * Dau vao: URL
+ * Nhiem vu: Lay tat ca cac Show tu URL
+ */
+
+public class CollectDataFromUrl  {
+	public static int count = 0;
+	private String url;
+	private String content;
+
+	public CollectDataFromUrl(String url) {
+		this.url = url;
+	}
+
+	public static String GetStringFromURL(String url) {
+		try {
+			URL conn = new URL(url);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					conn.openStream(),"UTF-8"));
+			String content = "";
+			String line;
+			while ((line = reader.readLine()) != null)
+				content += line + "\n";
+			reader.close();
+
+			return content;
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public void getTheShow() {
+		content = GetStringFromURL(url);
+		Document doc = Jsoup.parse(content);
+
+		Elements titles = doc.getElementsByAttributeValue("class","post-title entry-title");
+		Elements times = doc.getElementsByAttributeValue("class", "entry-date");
+		Elements contentUrls = doc.getElementsByAttributeValue("class","element-wrap");
+		Elements imageDiv = doc.getElementsByAttributeValue("class","post-image");
+		
+		List<Show> list = new ArrayList<Show>();
+		for (int i = 0; i < titles.size(); i++) {
+			Show s = new Show(times.get(i).text());
+			s.setTitle(titles.get(i).text());
+			s.setContentUrl(contentUrls.get(i).attr("href"));
+			s.setImageURL(imageDiv.get(i).getAllElements().get(2).attr("src"));
+			list.add(s);
+		}
+		
+		MySQLite.getInstance().AddShow(list);
+		count++;
+		System.out.println("Xong: "+count);
+	}
+	
+	public void getTheSongsFromTheShow(Show s){
+		content = GetStringFromURL(s.getContentUrl());
+		System.out.println(s.getContentUrl());
+		Document doc = Jsoup.parse(content);
+		String pattern;
+		Pattern p;
+		Matcher m;
+		
+		//Lay link bai hat
+		 pattern = "file:[^{}]+";
+		 p = Pattern.compile(pattern);
+		 m = p.matcher(content);
+		while(m.find())
+			System.out.println(m.group().substring(6,m.group().length()-1));
+		
+		pattern = "title:[^{}]+id";
+		 p = Pattern.compile(pattern);
+		 m = p.matcher(content);
+		while(m.find())
+			{
+			m.group()
+			}
+	}
+}

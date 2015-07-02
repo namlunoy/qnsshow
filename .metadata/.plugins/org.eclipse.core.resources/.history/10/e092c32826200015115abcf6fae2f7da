@@ -1,0 +1,11 @@
+package com.thebrownbox.controllers;
+
+import com.thebrownbox.database.MySQLite;
+import com.thebrownbox.drawlertool.CollectDataFromUrl;
+
+public class MainProgram {
+	public static void main(String[] args) {
+		
+		List<Show> list = MySQLite.getInstance().getTheShow(0, 10);
+	}
+}

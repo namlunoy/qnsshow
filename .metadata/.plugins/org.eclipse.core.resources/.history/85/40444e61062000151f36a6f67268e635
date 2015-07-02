@@ -1,0 +1,11 @@
+package com.thebrownbox.controllers;
+
+import java.util.Scanner;
+
+public class ShowController {
+	public static void main(String[] args) {
+		String out = new Scanner(new URL("http://www.google.com").openStream(),
+				"UTF-8").useDelimiter("\\A").next();
+
+	}
+}
