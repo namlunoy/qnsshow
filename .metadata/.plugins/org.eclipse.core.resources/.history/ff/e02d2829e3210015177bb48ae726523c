@@ -1,0 +1,21 @@
+package com.thebrownbox.drawlertool;
+
+import javax.naming.PartialResultException;
+
+public class HeaderParam
+{
+	public String VIEWSTATE;
+	public String EVENTTARGET;
+	public String EVENTVALIDATION;
+	
+	public boolean hasPage6(String html)
+	{
+		String pattern = DoHttp.getEVENTTARGET(6);
+		
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("\nVIEWSTATE:%s\nEVENTTARGET:%s\nEVENTVALIDATION:%s\n",VIEWSTATE,EVENTTARGET,EVENTVALIDATION );
+	}
+}

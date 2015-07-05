@@ -1,0 +1,23 @@
+package com.thebrownbox.drawlertool;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+
+
+public class HeaderParam
+{
+	public String VIEWSTATE;
+	public String EVENTTARGET;
+	public String EVENTVALIDATION;
+	public boolean hasPage6;
+	public void checkPage6(String html)
+	{
+		hasPage6 = html.contains("dgrPaging$ctl04$ctl06");
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("\nVIEWSTATE:%s\nEVENTTARGET:%s\nEVENTVALIDATION:%s\nHasPage6:%s\n",VIEWSTATE,EVENTTARGET,EVENTVALIDATION ,hasPage6);
+	}
+}

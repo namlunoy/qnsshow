@@ -1,0 +1,31 @@
+package com.thebrownbox.drawlertool;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+
+
+public class HeaderParam
+{
+	public String VIEWSTATE;
+	public String EVENTTARGET;
+	public String EVENTVALIDATION;
+	public boolean hasPage6;
+	public void checkPage6(String html)
+	{
+		hasPage6 = false;
+		String regex ="dgrPaging$ctl04$ctl06";
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(html);
+		while(matcher.find())
+		{
+			hasPage6 = true;
+			System.out.println("Có page 6");
+		}
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("\nVIEWSTATE:%s\nEVENTTARGET:%s\nEVENTVALIDATION:%s\nHasPage6:%s\n",VIEWSTATE,EVENTTARGET,EVENTVALIDATION ,hasPage6);
+	}
+}

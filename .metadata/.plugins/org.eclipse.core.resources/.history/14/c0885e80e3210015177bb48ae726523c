@@ -1,0 +1,25 @@
+package com.thebrownbox.drawlertool;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+
+
+public class HeaderParam
+{
+	public String VIEWSTATE;
+	public String EVENTTARGET;
+	public String EVENTVALIDATION;
+	public boolean hasPage6;
+	public boolean checkPage6(String html)
+	{
+		String regex = DoHttp.getEVENTTARGET(6);
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(html);
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("\nVIEWSTATE:%s\nEVENTTARGET:%s\nEVENTVALIDATION:%s\n",VIEWSTATE,EVENTTARGET,EVENTVALIDATION );
+	}
+}

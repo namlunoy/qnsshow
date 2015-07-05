@@ -1,0 +1,18 @@
+package com.thebrownbox.drawlertool;
+
+public class HeaderParam
+{
+	public String VIEWSTATE;
+	public String EVENTTARGET;
+	public String EVENTVALIDATION;
+	
+	public boolean hasPage6(String html)
+	{
+		
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("\nVIEWSTATE:%s\nEVENTTARGET:%s\nEVENTVALIDATION:%s\n",VIEWSTATE,EVENTTARGET,EVENTVALIDATION );
+	}
+}

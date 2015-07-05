@@ -1,0 +1,15 @@
+package com.thebrownbox.drawlertool;
+
+public class HeaderParam
+{
+	public String VIEWSTATE;
+	public String EVENTTARGET;
+	public String EVENTVALIDATION;
+	
+	
+	
+	@Override
+	public String toString() {
+		return String.format("\nVIEWSTATE:%s\nEVENTTARGET:%s\nEVENTVALIDATION:%s\n",VIEWSTATE,EVENTTARGET,EVENTVALIDATION );
+	}
+}
