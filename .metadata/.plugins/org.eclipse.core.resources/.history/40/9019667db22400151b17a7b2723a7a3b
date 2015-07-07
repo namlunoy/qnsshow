@@ -1,0 +1,12 @@
+package com.thebrownbox.controllers;
+
+public class Helper {
+	public static boolean tryParseInt(String s)
+	{
+		try {
+			Integer.parseInt(s);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+	}
+}

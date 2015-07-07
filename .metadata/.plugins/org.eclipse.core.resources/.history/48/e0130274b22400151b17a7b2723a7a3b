@@ -1,0 +1,8 @@
+package com.thebrownbox.controllers;
+
+public class Helper {
+	public static boolean tryParseInt(String s)
+	{
+		Integer.parseInt(s);
+	}
+}

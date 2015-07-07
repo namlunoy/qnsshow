@@ -154,7 +154,7 @@ public class MySQLite {
 		{
 			if(isShowExits(show))
 			{
-				//updateShowQnS(show);
+				updateShowQnS(show);
 			}else{
 				addNewShowQnS(show);
 			}
@@ -221,11 +221,11 @@ public class MySQLite {
 			conn = DriverManager.getConnection("jdbc:sqlite:qns.db");
 			cmd = conn.createStatement();
 			
-			String sql = "update show set full_mp3_url='"+s.getFullMp3Url()+"',number = "+s.getNumber()+" where id = "+s.getId();
-			cmd.execute(sql);
-			
+			String sql = "update show set number="+s.getNumber()+", qns_url = '"+s.getQns_url()+"' where id = "+s.getId();
+			int result = cmd.executeUpdate(sql);
+			System.out.println("update "+s.getId()+": "+result);
 			conn.close();
-			System.out.println("updateShowQnS : ok!");
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
