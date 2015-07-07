@@ -78,6 +78,11 @@ public class MySQLite {
 				s.setImageURL(rs.getString("image_url"));
 				s.setIsFavorited(rs.getBoolean("is_favorited"));
 				s.setTitle(rs.getString("title"));
+				
+				s.setNumber(rs.getInt("number"));
+				s.setFullMp3Url(rs.getString("full_mp3_url"));
+				s.setQns_url(rs.getString("qns_url"));
+				
 				list.add(s);
 			}
 			
@@ -145,19 +150,12 @@ public class MySQLite {
 
 	public void SyncListShowWithFullMp3AndNumber(List<Show> list)
 	{
-		/*Sẽ có trường hợp nó ko có chương trình
-		Do đó mà cần kiểm tra mã nó trước!
-		Nếu có rồi thì chạy câu lệnh update
-		Nếu không có thì chạy câu lệnh thêm
-		*/
 		for(Show show : list)
 		{
 			if(isShowExits(show))
-			{
 				updateShowQnS(show);
-			}else{
+			else
 				addNewShowQnS(show);
-			}
 		}
 	}
 	
@@ -222,6 +220,22 @@ public class MySQLite {
 			cmd = conn.createStatement();
 			
 			String sql = "update show set number="+s.getNumber()+", qns_url = '"+s.getQns_url()+"' where id = "+s.getId();
+			int result = cmd.executeUpdate(sql);
+			System.out.println("update "+s.getId()+": "+result);
+			conn.close();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void UpdateFullMp3(Show s)
+	{
+		try {
+			conn = DriverManager.getConnection("jdbc:sqlite:qns.db");
+			cmd = conn.createStatement();
+			
+			String sql = "update show set full_mp3_url = '"+s.getFullMp3Url()+"' where id = "+s.getId();
 			int result = cmd.executeUpdate(sql);
 			System.out.println("update "+s.getId()+": "+result);
 			conn.close();

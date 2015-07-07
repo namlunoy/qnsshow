@@ -32,7 +32,18 @@ public class CollectData {
 		this.url = url;
 	}
 
-
+	public static String getMp3FromQnS(String html)
+	{
+		Pattern p = Pattern.compile("Playfile\\(\\'.+\\.mp3");
+		Matcher matcher = p.matcher(html);
+		if(matcher.find())
+		{
+			String mp3 = matcher.group();
+			mp3 = mp3.substring(10);
+			return "http://qns.vn/"+mp3;
+		}
+		return "";
+	}
 
 	public void getTheShow() {
 		content = HttpWork.GetStringFromURL(url);

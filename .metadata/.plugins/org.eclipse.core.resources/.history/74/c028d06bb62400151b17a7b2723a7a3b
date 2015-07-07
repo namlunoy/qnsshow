@@ -1,0 +1,194 @@
+package com.thebrownbox.drawlertool;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import com.thebrownbox.controllers.Helper;
+import com.thebrownbox.database.MySQLite;
+import com.thebrownbox.models.Show;
+import com.thebrownbox.models.Song;
+
+/*
+ * Nhiệm vụ: chuyển content html sang object
+ */
+
+public class CollectData {
+	public static int count = 0;
+	private String url;
+	private String content;
+
+	public CollectData(String url) {
+		this.url = url;
+	}
+
+public static String getMp3FromQnS(String html)
+{
+	Pattern p = Pattern.compile("Playfile\\(\\'.+\.mp3");
+}
+
+	public void getTheShow() {
+		content = HttpWork.GetStringFromURL(url);
+		Document doc = Jsoup.parse(content);
+
+		Elements titles = doc.getElementsByAttributeValue("class",
+				"post-title entry-title");
+		Elements times = doc.getElementsByAttributeValue("class", "entry-date");
+		Elements contentUrls = doc.getElementsByAttributeValue("class",
+				"element-wrap");
+		Elements imageDiv = doc.getElementsByAttributeValue("class",
+				"post-image");
+
+		List<Show> list = new ArrayList<Show>();
+		for (int i = 0; i < titles.size(); i++) {
+			Show s = new Show(times.get(i).text());
+			s.setTitle(titles.get(i).text());
+			s.setContentUrl(contentUrls.get(i).attr("href"));
+			s.setImageURL(imageDiv.get(i).getAllElements().get(2).attr("src"));
+			list.add(s);
+		}
+
+		MySQLite.getInstance().AddListShow(list);
+		count++;
+		System.out.println("Xong: " + count);
+	}
+
+	public void getTheSongsFromTheShow(Show s) {
+		System.out.println(s.getContentUrl() + " is processing...");
+		content = HttpWork.GetStringFromURL(s.getContentUrl());
+		Document doc = Jsoup.parse(content);
+		String pattern;
+		Pattern p;
+		Matcher m;
+		int index = 0;
+		List<Song> list = new ArrayList<Song>();
+
+		// Lay id:
+		pattern = "id:[^{}]+,l";
+		p = Pattern.compile(pattern);
+		m = p.matcher(content);
+		while (m.find())
+			list.add(new Song(Integer.parseInt(m.group().substring(5,
+					m.group().length() - 3))));
+
+		// Lay link bai hat
+		pattern = "file:[^{}]+";
+		p = Pattern.compile(pattern);
+		m = p.matcher(content);
+		index = 0;
+		while (m.find())
+			list.get(index++).setMp3URL(
+					m.group().substring(6, m.group().length() - 1));
+
+		// Lay ten bai hat va ca si
+		pattern = "title:[^{}]+id";
+		p = Pattern.compile(pattern);
+		m = p.matcher(content);
+		index = 0;
+		while (m.find()) {
+			String[] k = m.group().subSequence(8, m.group().length() - 4)
+					.toString().split("-");
+			if (k.length == 1) {
+				System.out.println("x");
+				list.get(index++).setTitle(k[0]);
+			} else if (k.length == 2 || k.length == 3) {
+				list.get(index).setTitle(k[0]);
+				list.get(index++).setSinger(k[1]);
+			}
+		}
+
+		// Laays image url
+		pattern = "image:\"[^{}]+.jpg";
+		p = Pattern.compile(pattern);
+		m = p.matcher(content);
+		index = 0;
+		while (m.find())
+			list.get(index++).setImageURL(
+					m.group().substring(7, m.group().length()));
+		
+		for(Song song : list)
+			song.setShowId(s.getId());
+		
+		MySQLite.getInstance().AddListSong(list);
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Xử lý thông tin lấy về từ trang qns.vn
+	 * Chuyển jsuop của trang web về dạng Show
+	 * Với nguồn trang là qns.vn
+	 * Đầu vào là doc vì ở ngoài nó parse 1 lần rồi
+	 * @param doc
+	 * @return
+	 */
+	//Cái quan trọng nhất cần lấy được là: Ngày tháng, chỉ số, ảnh
+	public static List<Show> getListShowFromQnSHtml(String html)
+	{
+		Document doc = Jsoup.parse(html);
+		List<Show> list = new ArrayList<Show>();
+		int i = 0;
+		
+		
+		//Lấy ngày tháng (id)
+		String sub = html.substring(html.indexOf("t_list"));
+		Pattern pattern = Pattern.compile("\\d{2}-\\d{2}-\\d{4}");
+		Matcher matcher = pattern.matcher(sub);
+		while(matcher.find())
+			list.add(new Show(matcher.group()));
+		
+		
+		
+		//Lấy số hiệu
+		Elements listName = doc.getElementById("t_list").getElementsByTag("samp");
+		i = 0;
+		for(Element e : listName)
+		{
+			String[] t = e.text().trim().split(" ");
+			if(Helper.tryParseInt(t[t.length-1]))
+				list.get(i++).setNumber(Integer.parseInt(t[t.length-1]));
+			else list.get(i++).setNumber(Integer.parseInt(t[t.length-2]));
+		}
+		
+		//Lấy ảnh
+		Elements listImages = doc.getElementById("t_list").getElementsByTag("img");
+		i = 0;
+		for(Element e : listImages)
+			list.get(i++).setImageURL("http://qns.vn/"+e.attr("src"));
+		
+		
+		//Lấy link qns.vn
+		Elements listQnsUrl = doc.getElementById("t_list").getElementsByTag("a");
+		for(int j=0; j<list.size();j++)
+		{
+			String u = listQnsUrl.get(j).attr("href");
+			list.get(j).setQns_url("http://qns.vn/"+u.substring(u.indexOf('\'')+1,u.lastIndexOf('\'')));
+		}
+		
+		//Lấy title của qns
+		Elements listQnsTitle = doc.getElementById("t_list").getElementsByTag("b");
+		for(int j=0; j<list.size();j++)
+		{
+			list.get(j).setTitle(listQnsTitle.get(j).text());
+			System.out.println(listQnsTitle.get(j).text());
+		}
+		
+		
+		
+		return list;
+	}
+}

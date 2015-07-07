@@ -1,0 +1,232 @@
+package com.thebrownbox.database;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLRecoverableException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.thebrownbox.models.Show;
+import com.thebrownbox.models.Song;
+
+public class MySQLite {
+	private static MySQLite instance = null;
+
+	public static MySQLite getInstance() {
+		if (instance == null)
+			instance = new MySQLite();
+		return instance;
+	}
+
+	private Connection conn;
+	private Statement cmd;
+
+	private MySQLite() {
+		try {
+			Class.forName("org.sqlite.JDBC");
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public List<Show> getTheShow(int index, int number) {
+		try {
+			String sql = "select * from show limit " + index + "," + number;
+			conn = DriverManager.getConnection("jdbc:sqlite:qns.db");
+			cmd = conn.createStatement();
+			ResultSet rs = cmd.executeQuery(sql);
+			List<Show> list = new ArrayList<Show>();
+
+			while(rs.next())
+			{
+				Show s = new Show(rs.getString("date"));
+				s.setContentUrl(rs.getString("content_url"));
+				s.setImageURL(rs.getString("image_url"));
+				s.setIsFavorited(rs.getBoolean("is_favorited"));
+				s.setTitle(rs.getString("title"));
+				list.add(s);
+			}
+			
+			rs.close();
+			cmd.close();
+			conn.close();
+			return list;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public List<Show> getAllTheShow() {
+		try {
+			String sql = "select * from show";
+			conn = DriverManager.getConnection("jdbc:sqlite:qns.db");
+			cmd = conn.createStatement();
+			ResultSet rs = cmd.executeQuery(sql);
+			List<Show> list = new ArrayList<Show>();
+
+			while(rs.next())
+			{
+				Show s = new Show(rs.getString("date"));
+				s.setContentUrl(rs.getString("content_url"));
+				s.setImageURL(rs.getString("image_url"));
+				s.setIsFavorited(rs.getBoolean("is_favorited"));
+				s.setTitle(rs.getString("title"));
+				
+				s.setNumber(rs.getInt("number"));
+				s.setFullMp3Url(rs.getString("full_mp3_url"));
+				s.setQns_url(rs.getString("qns_url"));
+				
+				list.add(s);
+			}
+			
+			rs.close();
+			cmd.close();
+			conn.close();
+			return list;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public void AddListShow(List<Show> list) {
+		try {
+			conn = DriverManager.getConnection("jdbc:sqlite:qns.db");
+			System.out.println("Connected to database!");
+
+			cmd = conn.createStatement();
+			for (Show s : list) {
+				// insert into show (id,title,date,image_url,content_url) values
+				// (1,'123', '123','123','123');
+				String sql = "insert into show (id,title,date,image_url,content_url) values ("
+						+ s.getId()
+						+ ",'"
+						+ s.getTitle()
+						+ "', '"
+						+ s.getDateString()
+						+ "','"
+						+ s.getImageURL()
+						+ "','"
+						+ s.getContentUrl() + "');";
+				cmd.execute(sql);
+			}
+
+			conn.close();
+			System.out.println("Closed database!");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void AddListSong(List<Song> list) {
+		try {
+			conn = DriverManager.getConnection("jdbc:sqlite:qns.db");
+			System.out.println("Connected to database!");
+
+			cmd = conn.createStatement();
+			for (Song s : list) {
+				//insert into song (id,title,singer,image_url,mp3_url) values (1,'title','singer','image','mp3')
+				String sql = "insert into song (id,title,singer,image_url,mp3_url,show_id) values ("+s.getId()+",'"+s.getTitle()+"','"+s.getSinger()+"','"+s.getImageURL()+"','"+s.getMp3URL()+"',"+s.getShowId()+")";
+				cmd.execute(sql);
+			}
+
+			conn.close();
+			System.out.println("Closed database!");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+
+	public void SyncListShowWithFullMp3AndNumber(List<Show> list)
+	{
+		for(Show show : list)
+		{
+			if(isShowExits(show))
+				updateShowQnS(show);
+			else
+				addNewShowQnS(show);
+			
+		}
+	}
+	
+
+	/**
+	 * Kiểm tra xem show đó đã có trong db chưa
+	 */
+	public boolean isShowExits(Show show) {
+		try {
+			conn = DriverManager.getConnection("jdbc:sqlite:qns.db");
+			cmd = conn.createStatement();
+			
+			String sql = "select * from show where id = "+show.getId();
+			ResultSet r = cmd.executeQuery(sql);
+			boolean result = r.next();
+			conn.close();
+			
+			if(result){
+				System.out.println(show.getId()+" is Exits!");
+			}else{
+				System.err.println(show.getId()+" is NOT Exits!");
+			}
+			
+			return result;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	/**
+	 * Them 1 show mới vòa database
+	 */
+	private void addNewShowQnS(Show s)
+	{
+		try {
+			conn = DriverManager.getConnection("jdbc:sqlite:qns.db");
+			cmd = conn.createStatement();
+			
+			
+			//id,Title,date,image,number,qns_url 
+			String sql = "insert into show ( id, title, date, image_url, number, qns_url) values"
+					+ " ("+s.getId()+", '"+s.getTitle()+"', '"+s.getDateString()
+					+"', '"+s.getImageURL()+"', "+s.getNumber()+", '"+s.getQns_url()+"' )";
+			cmd.execute(sql);
+			
+			conn.close();
+			System.out.println("addNewShow : ok!");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Chỉ update number và Full mp3
+	 * @param s
+	 */
+	private void updateShowQnS(Show s)
+	{
+		try {
+			conn = DriverManager.getConnection("jdbc:sqlite:qns.db");
+			cmd = conn.createStatement();
+			
+			String sql = "update show set number="+s.getNumber()+", qns_url = '"+s.getQns_url()+"' where id = "+s.getId();
+			int result = cmd.executeUpdate(sql);
+			System.out.println("update "+s.getId()+": "+result);
+			conn.close();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}
