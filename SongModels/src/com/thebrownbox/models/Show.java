@@ -14,7 +14,9 @@ public class Show {
 	private List<Song> listSong;
 	private Boolean isFavorited;
 	private String contentUrl;
-	private String mp3Url;
+	private String fullMp3Url;
+	private int number;
+	private String qns_url;
 	
 
 	public static void main(String[] args) {
@@ -24,11 +26,17 @@ public class Show {
 	}
 
 	public Show(String date) {
-		dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
+		if(date.contains("/"))
+			dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
+		else dateFormatter = new SimpleDateFormat("dd-MM-yyyy");
 		setDate(date);
 		listSong = new ArrayList<Song>();
 	}
 
+
+	
+	// -------------- Setter Getter -----------
+	
 	public int getId() {
 		return Integer.parseInt(String.format("%02d%02d%02d",
 				date.getYear() + 1900, date.getMonth() + 1, date.getDate()));
@@ -40,14 +48,12 @@ public class Show {
 				date.getDate(), date.getMonth() + 1,date.getYear() + 1900 );
 	}
 	
-	// -------------- Setter Getter -----------
-	
-	
-	
 	@Override
 	public String toString() {
-		System.out.println("title: "+title);
-		return super.toString();
+		return String.format("id: %d\n"
+				+ "title: %s\n"
+				+ "number: %d\n"
+				+ "mp3: %s\n", getId(),getTitle(),getNumber(),getFullMp3Url());
 	}
 
 	public Boolean getIsFavorited() {
@@ -107,11 +113,27 @@ public class Show {
 		this.contentUrl = contentUrl;
 	}
 
-	public String getMp3Url() {
-		return mp3Url;
+	public String getFullMp3Url() {
+		return fullMp3Url;
 	}
 
-	public void setMp3Url(String mp3Url) {
-		this.mp3Url = mp3Url;
+	public void setFullMp3Url(String mp3Url) {
+		this.fullMp3Url = mp3Url;
+	}
+
+	public int getNumber() {
+		return number;
+	}
+
+	public void setNumber(int number) {
+		this.number = number;
+	}
+
+	public String getQns_url() {
+		return qns_url;
+	}
+
+	public void setQns_url(String qns_url) {
+		this.qns_url = qns_url;
 	}
 }

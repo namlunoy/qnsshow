@@ -1,0 +1,5 @@
+﻿- Đã hoàn thành phần kiểm tra xem có chưa
+
+Việc tiếp theo:
+- Thêm xe mới
+- Đến anh thấy nó

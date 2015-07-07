@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.thebrownbox.database.MySQLite;
@@ -53,7 +54,7 @@ public class CollectDataFromUrl {
 			list.add(s);
 		}
 
-		MySQLite.getInstance().AddShow(list);
+		MySQLite.getInstance().AddListShow(list);
 		count++;
 		System.out.println("Xong: " + count);
 	}
@@ -114,7 +115,7 @@ public class CollectDataFromUrl {
 		for(Song song : list)
 			song.setShowId(s.getId());
 		
-		MySQLite.getInstance().AddSong(list);
+		MySQLite.getInstance().AddListSong(list);
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
@@ -123,9 +124,61 @@ public class CollectDataFromUrl {
 		}
 	}
 	
-	///Chuyển jsuop của trang web về dạng Show
-	public static Show UpdateTheShowFromQnsDotVN(Document doc)
+	/**
+	 * Chuyển jsuop của trang web về dạng Show
+	 * Với nguồn trang là qns.vn
+	 * Đầu vào là doc vì ở ngoài nó parse 1 lần rồi
+	 * @param doc
+	 * @return
+	 */
+	//Cái quan trọng nhất cần lấy được là: Ngày tháng, chỉ số, ảnh
+	public static Show UpdateTheShowFromQnsDotVN(String html)
 	{
+		Document doc = Jsoup.parse(html);
+		List<Show> list = new ArrayList<Show>();
+		int i = 0;
+		
+		
+		//Lấy ngày tháng (id)
+		String sub = html.substring(html.indexOf("t_list"));
+		Pattern pattern = Pattern.compile("\\d{2}-\\d{2}-\\d{4}");
+		Matcher matcher = pattern.matcher(sub);
+		while(matcher.find())
+			list.add(new Show(matcher.group()));
+		
+		
+		
+		//Lấy số hiệu
+		Elements listName = doc.getElementById("t_list").getElementsByTag("samp");
+		i = 0;
+		for(Element e : listName)
+		{
+			String[] t = e.text().trim().split(" ");
+			list.get(i++).setNumber(Integer.parseInt(t[t.length-1]));
+		}
+		
+		//Lấy ảnh
+		Elements listImages = doc.getElementById("t_list").getElementsByTag("img");
+		i = 0;
+		for(Element e : listImages)
+			list.get(i++).setImageURL("http://qns.vn/"+e.attr("src"));
+		
+		
+		//Lấy link qns.vn
+		Elements listQnsUrl = doc.getElementById("t_list").getElementsByTag("a");
+		for(int j=0; j<list.size();j++)
+		{
+			String u = listQnsUrl.get(j).attr("href");
+			list.get(j).setQns_url("http://qns.vn/"+u.substring(u.indexOf('\'')+1,u.lastIndexOf('\'')));
+		}
+		
+		//Lấy title của qns
+		Elements listQnsTitle = doc.getElementById("t_list").getElementsByTag("b");
+		for(int j=0; j<list.size();j++)
+			list.get(j).setTitle(listQnsTitle.get(j).text());
+		
+		
+		MySQLite.getInstance().SyncListShowWithFullMp3AndNumber(list);
 		
 		return null;
 	}

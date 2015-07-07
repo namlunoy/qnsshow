@@ -92,7 +92,7 @@ public class MySQLite {
 		return null;
 	}
 
-	public void AddShow(List<Show> list) {
+	public void AddListShow(List<Show> list) {
 		try {
 			conn = DriverManager.getConnection("jdbc:sqlite:qns.db");
 			System.out.println("Connected to database!");
@@ -122,7 +122,7 @@ public class MySQLite {
 		}
 	}
 	
-	public void AddSong(List<Song> list) {
+	public void AddListSong(List<Song> list) {
 		try {
 			conn = DriverManager.getConnection("jdbc:sqlite:qns.db");
 			System.out.println("Connected to database!");
@@ -138,6 +138,95 @@ public class MySQLite {
 			System.out.println("Closed database!");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+
+	public void SyncListShowWithFullMp3AndNumber(List<Show> list)
+	{
+		/*Sẽ có trường hợp nó ko có chương trình
+		Do đó mà cần kiểm tra mã nó trước!
+		Nếu có rồi thì chạy câu lệnh update
+		Nếu không có thì chạy câu lệnh thêm
+		*/
+		for(Show show : list)
+		{
+			if(isShowExits(show))
+			{
+				//updateShowQnS(show);
+			}else{
+				addNewShowQnS(show);
+			}
+		}
+	}
+	
+
+	/**
+	 * Kiểm tra xem show đó đã có trong db chưa
+	 */
+	public boolean isShowExits(Show show) {
+		try {
+			conn = DriverManager.getConnection("jdbc:sqlite:qns.db");
+			cmd = conn.createStatement();
+			
+			String sql = "select * from show where id = "+show.getId();
+			ResultSet r = cmd.executeQuery(sql);
+			boolean result = r.next();
+			conn.close();
+			
+			if(result){
+				System.out.println(show.getId()+" is Exits!");
+			}else{
+				System.err.println(show.getId()+" is NOT Exits!");
+			}
+			
+			return result;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	/**
+	 * Them 1 show mới vòa database
+	 */
+	private void addNewShowQnS(Show s)
+	{
+		try {
+			conn = DriverManager.getConnection("jdbc:sqlite:qns.db");
+			cmd = conn.createStatement();
+			
+			
+			//id,Title,date,image,number,qns_url 
+			String sql = "insert into show ( id, title, date, image_url, number, qns_url) values"
+					+ " ("+s.getId()+", '"+s.getTitle()+"', '"+s.getDateString()
+					+"', '"+s.getImageURL()+"', "+s.getNumber()+", '"+s.getQns_url()+"' )";
+			cmd.execute(sql);
+			
+			conn.close();
+			System.out.println("addNewShow : ok!");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Chỉ update number và Full mp3
+	 * @param s
+	 */
+	private void updateShowQnS(Show s)
+	{
+		try {
+			conn = DriverManager.getConnection("jdbc:sqlite:qns.db");
+			cmd = conn.createStatement();
+			
+			String sql = "update show set full_mp3_url='"+s.getFullMp3Url()+"',number = "+s.getNumber()+" where id = "+s.getId();
+			cmd.execute(sql);
+			
+			conn.close();
+			System.out.println("updateShowQnS : ok!");
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
